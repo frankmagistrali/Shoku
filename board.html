@@ -1,0 +1,80 @@
+
+<html>
+	<head>
+		<script type="text/javascript" src ="fabric/0.9.15.min.js"> </script>
+		<script type="text/javascript" src ="Hex.js"> </script>
+		
+		
+	</head>
+	<body>
+
+	
+
+		<canvas id="c" width="1500" height="900"></canvas>
+		<script >
+			var canvas = new fabric.Canvas('c');
+			// now we can observe "object:over" and "object:out" events
+			// in this example, object is set to red color on hover over and green color on hover out
+
+			canvas.on('object:over', function(e) {
+			
+			  e.target.setFill('red');
+			  canvas.renderAll();
+			});
+
+			canvas.on('object:out', function(e) {
+			  e.target.setFill('green');
+			  canvas.renderAll();
+			});
+
+			
+			var width = (Math.sqrt(3.0)/2.0);
+			
+			var xOffset = 50.0*width;
+			var yOffset = 1.5*(50.0);
+			for(i=0; i<5; i++){
+				var leftStart = 100;
+				for(j=0; j<5; j++){
+					var topStart = 100;
+					canvas.add(new Hex(leftStart+2*j*xOffset, topStart+2*i*yOffset, 50, 'red'));
+				}
+			}
+			
+			
+			for(i=0; i<4; i++){
+				var leftStart = 100-xOffset;
+				for(j=0; j<6; j++){
+					var topStart = 100+yOffset;
+					canvas.add(new Hex(leftStart+2*j*xOffset, topStart+2*i*yOffset, 50, 'blue'));
+				}
+			}
+		
+
+
+
+			// piggyback on `canvas.findTarget`, to fire "object:over" and "object:out" events
+
+			canvas.findTarget = (function(originalFn) {
+			  return function() {
+				var target = originalFn.apply(this, arguments);
+				if (target) {
+				  if (this._hoveredTarget !== target) {
+					canvas.fire('object:over', { target: target });
+					if (this._hoveredTarget) {
+					  canvas.fire('object:out', { target: this._hoveredTarget });
+					}
+					this._hoveredTarget = target;
+				  }
+				}
+				else if (this._hoveredTarget) {
+				  canvas.fire('object:out', { target: this._hoveredTarget });
+				  this._hoveredTarget = null;
+				}
+				return target;
+			  };
+			})(canvas.findTarget);
+
+			
+		</script>
+	</body>
+</html>

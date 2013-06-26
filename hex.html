@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<script type="text/javascript" src ="fabric/all.min.js"> </script>
+		<script type="text/javascript" src ="Hex.js"> </script>
+		
+		
+	</head>
+	<body>
+
+	
+
+		<canvas id="c" width="1500" height="900"></canvas>
+		<script >
+			var canvas = new fabric.Canvas('c');
+
+			var startPoints = [
+			  {x: 400, y: 442},
+			  {x: 555, y: 400},
+			  {x: 555, y: 643},
+			  {x: 400, y: 656}
+			];
+			
+			var startPoints2 = [
+			  {x: -25, y: -25},
+			  {x: 25, y: -25},
+			  {x: 25, y: 25},
+			  {x: -25, y: 25}
+			];
+			
+			var startPoints3 = [
+			  {x: -50, y: 0},
+			  {x: -25, y: -50-Math.sqrt(3)/2},
+			  {x: 25, y: -50-Math.sqrt(3)/2},
+			  {x: 50, y: 0},
+			  {x: 25, y: 50-Math.sqrt(3)/2},
+			  {x: -25, y: 50-Math.sqrt(3)/2}
+			  
+			];
+			// create a rectangle with angle=45
+			var hex = new fabric.Polygon(startPoints3, {
+			  left: 100,
+			  top: 100,
+			  fill: 'red'
+			});
+			hex.lockScalingX = hex.lockScalingY = true;
+			
+			var hex2 = new Hex(175, 150, 'blue');
+			var hex3 = new Hex(250, 100, 'green');
+			
+			
+			//var group = new fabric.Group([hex, circle, triangle]);
+			//group.hasControls = group.hasBorders = false;
+
+			canvas.add(hex, hex2, hex3);
+			//canvas.add(group);
+			
+
+
+		</script>
+	</body>
+</html>

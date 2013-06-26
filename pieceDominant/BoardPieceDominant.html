@@ -1,0 +1,176 @@
+
+
+<html>
+	<head>
+		<script type="text/javascript" src ="../fabric/0.9.15.min.js"> </script>
+		<script type="text/javascript" src ="../tests/HexWithCircle.js"> </script>
+		<script type="text/javascript" src ="SubmissiveHexWithCircle.js"> </script>
+		<script type="text/javascript" src ="../Pieces/BasicPiece.js"> </script>
+		
+		
+	</head>
+	<body>
+
+	
+
+		<canvas id="c" width="1500" height="900"></canvas>
+		<script>
+			function loadTheBoard(canvas){
+				var width = Math.sqrt(3.0)/2.0;
+			
+			var xOffset = 50.0*width;
+			var yOffset = 1.5*(50.0);
+			var leftStart = 200;
+			var topStart = 100;
+			for(var i=0; i<7; i++){
+				var left1 = leftStart;
+				var top1 = topStart
+				var jCounterStart = 0;
+				var fillColor = "red";
+				if(i%2 != 0){
+					top1 += yOffset;
+				}else{
+					top1 += yOffset;
+					left1 += xOffset;
+					jCounterStart = -1;
+					fillColor = "blue"; 
+				}
+								
+				for(var j=jCounterStart; j<5; j++){
+					
+					if(i == 3){
+						if(j == 0){
+							canvas.add(new SubmissiveHexWithCircle(left1+2*(-1)*xOffset, top1+i*yOffset, 50, 'purple'));
+						}else if (j == 4){
+							canvas.add(new SubmissiveHexWithCircle(left1+2*5*xOffset, top1+i*yOffset, 50, 'orange'));
+						} 
+					}		
+					
+					canvas.add(new SubmissiveHexWithCircle(left1+2*j*xOffset, top1+i*yOffset, 50, fillColor));
+					
+				}
+				
+			}
+		}
+				
+		</script>
+		<script >
+			var selectedPiece;
+			var lastSelectedHex;
+			var canvas = new fabric.Canvas('c');
+
+			var circle = new BasicPiece(850, 750, 20, 'green');
+			var circle2 = new BasicPiece(750, 750, 20, 'black');
+			
+
+			canvas.add(circle);
+			canvas.add(circle2);
+			
+			canvas.on('object:over', function(e) {
+			
+			  e.target.setFill('green');
+			  canvas.renderAll();
+			});
+			
+			canvas.on('object:out', function(e) {
+				var hex = e.target;
+				if(hex.hasOwnProperty("defaultColor")){
+					if(hex == selectedPiece){
+						hex.setFill("yellow");
+					}else{
+						hex.setFill(hex.defaultColor);
+					}
+				}else{
+					hex.setFill(hex.originalState.fill);
+				}
+				
+				//hex.setFill(hex.defaultColor());
+			  //e.target.setFill('green');
+			  canvas.renderAll();
+			});
+			
+			canvas.on('mouse:down', function(options) {
+			  if (options.target) {
+					console.log('an object was clicked! ', options.target.type);
+					//options.target.setFill('yellow');
+					console.log('selected a Hex');
+					
+					// select a piece, one was not already selected
+					if(options.target.type == "BasicPiece" && selectedPiece == null){
+						selectedPiece = options.target;
+						selectedPiece.bringToFront();
+						selectedPiece.setFill('yellow');
+						
+					}else if( selectedPiece != null && options.target.type == "BasicPiece"){
+						if(selectedPiece != options.target){
+							selectedPiece.setSelected(options.target.containedBy);
+							options.target.setSelected(null);
+							canvas.remove(options.target);
+						}
+						//later I'll need to check for who the piece belongs to, and ensure that you aren't selecting the same piece twice
+						//options.target.containedBy.setSelected(selectedPiece);
+						
+						selectedPiece.setFill(selectedPiece.defaultColor);
+						selectedPiece.bringToFront();
+						selectedPiece = null;
+							
+					}else if( selectedPiece != null && options.target.type == "Hex"){
+						if(options.target.containsPiece != null && selectedPiece != options.target.containsPiece){
+							
+							canvas.remove(options.target.containsPiece);
+							options.target.containsPiece.setSelected(null);
+						}
+						selectedPiece.setSelected(options.target);
+						selectedPiece.setFill(selectedPiece.defaultColor);
+						selectedPiece.bringToFront();
+						selectedPiece = null;
+					}
+
+					if(selectedPiece != null){ 
+						
+					}
+					canvas.renderAll();
+			  }
+			});
+			canvas.on('mouse:up', function(options) {
+			  if (options.target) {
+					console.log('an object was unclicked! ', options.target.type);
+
+					canvas.renderAll();
+			  }
+			});
+			
+						
+			loadTheBoard(canvas);
+			
+
+			circle.bringToFront();
+			circle2.bringToFront();
+			canvas.renderAll();
+
+			// piggyback on `canvas.findTarget`, to fire "object:over" and "object:out" events
+
+			canvas.findTarget = (function(originalFn) {
+			  return function() {
+				var target = originalFn.apply(this, arguments);
+				if (target) {
+				  if (this._hoveredTarget !== target) {
+					canvas.fire('object:over', { target: target });
+					if (this._hoveredTarget) {
+					  canvas.fire('object:out', { target: this._hoveredTarget });
+					}
+					this._hoveredTarget = target;
+				  }
+				}
+				else if (this._hoveredTarget) {
+				  canvas.fire('object:out', { target: this._hoveredTarget });
+				  this._hoveredTarget = null;
+				}
+				return target;
+			  };
+			})(canvas.findTarget);
+
+		</script>
+		
+	</body>
+</html>

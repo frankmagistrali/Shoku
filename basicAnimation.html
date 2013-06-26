@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      #myCanvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <script>
+		
+		speedX = 1;// pixels / second
+		speedY = 0;// pixels / second
+		
+		window.requestAnimFrame = (function(callback){
+			return window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function(callback){
+				window.setTimeout(callback, 1000 / 60);
+			};
+		})();
+		 
+		function animate(lastTime, myRectangle){
+			var canvas = document.getElementById("myCanvas");
+			var context = canvas.getContext("2d");
+			canvas.onmousedown = mouseClick;
+		 
+			// update
+			var date = new Date();
+			var time = date.getTime();
+			var timeDiff = time - lastTime;
+			var linearSpeed = 200; // pixels / second
+			var linearDistEachFrame = linearSpeed * timeDiff / 1000;
+			var currentX = myRectangle.x;
+			var currentY = myRectangle.y;
+		 
+			if (currentX < canvas.width - myRectangle.width - myRectangle.borderWidth / 2) {
+				var newX = currentX + linearDistEachFrame*speedX;
+				myRectangle.x = newX;
+			}
+			if (currentY < canvas.height - myRectangle.height - myRectangle.borderWidth / 2) {
+				var newY = currentY + linearDistEachFrame*speedY;
+				myRectangle.y = newY;
+			}
+			lastTime = time;
+		 
+			// clear
+			context.clearRect(0, 0, canvas.width, canvas.height);
+		 
+			// draw
+			context.beginPath();
+			context.rect(myRectangle.x, myRectangle.y, myRectangle.width, myRectangle.height);
+		 
+			context.fillStyle = "#8ED6FF";
+			context.fill();
+			context.lineWidth = myRectangle.borderWidth;
+			context.strokeStyle = "black";
+			context.stroke();
+		 
+			// request new frame
+			requestAnimFrame(function(){
+				animate(lastTime, myRectangle);
+			});
+		}
+		 
+		window.onload = function(){
+			myRectangle = {
+				x: 0,
+				y: 50,
+				width: 100,
+				height: 50,
+				borderWidth: 5
+			};
+		 
+			var date = new Date();
+			var time = date.getTime();
+			animate(time, myRectangle);
+		};
+		
+		function mouseClick(e){
+			
+			
+			var position = getPosition(e);
+			
+			x = position.x;
+			y = position.y;
+			
+			newDirection(x,y);
+			
+
+		}
+		
+		function newDirection( x,y){
+			var xDir = x - myRectangle.x;
+			var yDir = y - myRectangle.y;
+			var dist = distance(x,y,myRectangle.x, myRectangle.y);
+			speedX = xDir/dist;
+			speedY = yDir/dist;
+			
+		}
+		
+		function distance(x1,y1,x2,y2){
+			//THIS HAS SQRT and thus can decrease performance...
+			
+			var dist = Math.sqrt((x2 - x1)*(x2-x1) + (y2-y1)*(y2-y1));
+			return dist;
+			
+		}
+		
+		
+		function getPosition(e) {
+
+			//this section is from http://www.quirksmode.org/js/events_properties.html
+			var targ;
+			if (!e)
+				e = window.event;
+			if (e.target)
+				targ = e.target;
+			else if (e.srcElement)
+				targ = e.srcElement;
+			if (targ.nodeType == 3) // defeat Safari bug
+				targ = targ.parentNode;
+
+			// jQuery normalizes the pageX and pageY
+			// pageX,Y are the mouse positions relative to the document
+			// offset() returns the position of the element relative to the document
+			var x = e.pageX - targ.offsetLeft;
+			var y = e.pageY - targ.offsetTop;
+
+			
+			return {"x": x, "y": y};
+		};
+
+
+    </script>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="1500" height="900"></canvas>
+  </body>
+</html>

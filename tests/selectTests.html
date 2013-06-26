@@ -1,0 +1,172 @@
+
+<html>
+	<head>
+		<script type="text/javascript" src ="../fabric/0.9.15.min.js"> </script>
+		<script type="text/javascript" src ="HexWithCircle.js"> </script>
+		<script type="text/javascript" src ="../Pieces/BasicPiece.js"> </script>
+		
+		
+	</head>
+	<body>
+
+	
+
+		<canvas id="c" width="1500" height="900"></canvas>
+		<script >
+			var selectedPiece;
+			var lastSelectedHex;
+			var canvas = new fabric.Canvas('c');
+			// now we can observe "object:over" and "object:out" events
+			// in this example, object is set to red color on hover over and green color on hover out
+
+//TODO: Think this is what is messing it up
+			var circle = new BasicPiece(750, 750, 20, 'green');
+			
+//new fabric.Circle({
+			  //radius: 20, fill: 'green', left: 750, top: 750
+			//});
+			
+			
+			var circle2 = new fabric.Circle({
+			  radius: 20, fill: 'grey', left: 750, top: 750
+			});
+			circle2.lockScalingX = circle2.lockScalingY = true;
+			circle2.hasControls = circle2.hasBorders = false;
+			circle2.lockMovementX = circle2.lockMovementY = true;
+			circle2.selectable = false;
+			canvas.add(circle);
+			canvas.add(circle2);
+			
+			canvas.on('mouse:down', function(options) {
+			  if (options.target) {
+					console.log('an object was clicked! ', options.target.type);
+					//options.target.setFill('yellow');
+					console.log('selected a Hex');
+					if(selectedPiece != null && options.target.containsPiece == null){
+						options.target.setSelected(selectedPiece);
+						selectedPiece.bringToFront();
+						selectedPiece = null;
+						lastSelectedHex.setSelected(null);
+						lastSelectedHex.setFill(lastSelectedHex.defaultColor);
+						lastSelectedHex = null;
+						
+						
+					}else if(selectedPiece == null && options.target.containsPiece != null){
+						selectedPiece = options.target.containsPiece;
+						lastSelectedHex = options.target;
+						lastSelectedHex.setFill('yellow');
+					}else{
+						selectedPiece = null;
+						if(lastSelectedHex != null){
+							lastSelectedHex.setFill(lastSelectedHex.defaultColor);
+							lastSelectedHex = null;
+						}
+					}
+					
+					//circle.bringToFront();
+					//circle2.bringToFront();
+					if(selectedPiece != null){ 
+						
+					}
+					canvas.renderAll();
+			  }
+			});
+			canvas.on('mouse:up', function(options) {
+			  if (options.target) {
+					console.log('an object was unclicked! ', options.target.type);
+					//options.target.setFill(options.target.defaultColor);
+					//console.log('selected a Hex');
+					//options.target.setSelected(circle);
+					//circle.bringToFront();
+					canvas.renderAll();
+			  }
+			});
+			/*canvas.on('object:selected', function(e) {
+			
+			  e.target.setFill('yellow');
+			  console.log('selected a rectangle');
+			  e.target.setSelected(circle);
+			  circle.bringToFront();
+			  canvas.renderAll();
+			});
+
+			canvas.on('object:out', function(e) {
+				var hex = e.target;
+				if(hex.hasOwnProperty("defaultColor")){
+					hex.setFill(hex.defaultColor);
+				}else{
+					hex.setFill(hex.originalState.fill);
+				}
+				
+				//hex.setFill(hex.defaultColor2());
+			  //e.target.setFill('green');
+			  canvas.renderAll();
+			});
+			*/
+						
+			var width = Math.sqrt(3.0)/2.0;
+			
+			var xOffset = 50.0*width;
+			var yOffset = 1.5*(50.0);
+			for(var i=0; i<5; i++){
+				var leftStart = 100;
+				for(var j=0; j<5; j++){
+					var topStart = 100;
+					canvas.add(new HexWithCircle(leftStart+2*j*xOffset, topStart+2*i*yOffset, 50, 'red'));
+				}
+			}
+			
+
+			for(var ii=0; ii<4; ii++){
+				leftStart2 = 100-xOffset;
+				for(var jj=0; jj<6; jj++){
+					topStart2 = 100+yOffset;
+					var hex = new HexWithCircle(leftStart2+2*jj*xOffset, topStart2+2*ii*yOffset, 50, 'blue');
+					if(ii == 0 && jj ==0){
+						hex.setSelected(circle);
+						circle.setSelected(hex);
+					}
+					if(ii == 0 && jj ==1){
+						hex.setSelected(circle2);
+					}
+					canvas.add(hex);
+
+				}
+			}
+			
+			
+			
+
+			circle.bringToFront();
+			circle2.bringToFront();
+			canvas.renderAll();
+		
+			//canvas._objects[0].setSelected(circle);
+			//circle.left = canvas._objects[0].left;
+			//circle.top = canvas._objects[0].top;
+
+			// piggyback on `canvas.findTarget`, to fire "object:over" and "object:out" events
+
+			canvas.findTarget = (function(originalFn) {
+			  return function() {
+				var target = originalFn.apply(this, arguments);
+				if (target) {
+				  if (this._hoveredTarget !== target) {
+					canvas.fire('object:on', { target: target });
+					if (this._hoveredTarget) {
+					  canvas.fire('object:out', { target: this._hoveredTarget });
+					}
+					this._hoveredTarget = target;
+				  }
+				}
+				else if (this._hoveredTarget) {
+				  canvas.fire('object:out', { target: this._hoveredTarget });
+				  this._hoveredTarget = null;
+				}
+				return target;
+			  };
+			})(canvas.findTarget);
+
+		</script>
+	</body>
+</html>
